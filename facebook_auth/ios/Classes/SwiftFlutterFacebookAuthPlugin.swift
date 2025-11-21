@@ -62,22 +62,13 @@ public class SwiftFlutterFacebookAuthPlugin: NSObject, FlutterPlugin {
         self.facebookAuth.handle(call, result: result)
     }
 
-    // ------------------------------------------------------------
-    // FIXED: Updated for Xcode 15/16 / iOS 17+ SDK
-    // Apple removed didFinishLaunchingWithOptions for plugins.
-    // ------------------------------------------------------------
-
     @objc(application:continueUserActivity:restorationHandler:)
     public func application(
         _ application: UIApplication,
         continue userActivity: NSUserActivity,
         restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void
     ) -> Bool {
-        return ApplicationDelegate.shared.application(
-            application,
-            continue: userActivity,
-            restorationHandler: restorationHandler
-        )
+        return ApplicationDelegate.shared.application(application, continue: userActivity)
     }
 
     @objc(application:openURL:options:)
@@ -86,11 +77,6 @@ public class SwiftFlutterFacebookAuthPlugin: NSObject, FlutterPlugin {
         open url: URL,
         options: [UIApplication.OpenURLOptionsKey : Any] = [:]
     ) -> Bool {
-        return ApplicationDelegate.shared.application(
-            app,
-            open: url,
-            sourceApplication: options[.sourceApplication] as? String,
-            annotation: options[.annotation]
-        )
+        return ApplicationDelegate.shared.application(app, open: url)
     }
 }
