@@ -4,41 +4,56 @@ import FBSDKCoreKit
 
 public class SwiftFlutterFacebookAuthPlugin: NSObject, FlutterPlugin {
     let facebookAuth = FacebookAuth()
-
+    
     public static func register(with registrar: FlutterPluginRegistrar) {
-        ApplicationDelegate.initialize()
-        let channel = FlutterMethodChannel(
-            name: "app.meedu/flutter_facebook_auth",
-            binaryMessenger: registrar.messenger()
-        )
+        // Updated Facebook SDK initialization
+        Settings.shared.isAdvertiserIDCollectionEnabled = true
+        Settings.shared.isAdvertiserTrackingEnabled = true
+        
+        let channel = FlutterMethodChannel(name: "app.meedu/flutter_facebook_auth", binaryMessenger: registrar.messenger())
         let instance = SwiftFlutterFacebookAuthPlugin()
         registrar.addMethodCallDelegate(instance, channel: channel)
         registrar.addApplicationDelegate(instance)
     }
-
+    
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         self.facebookAuth.handle(call, result: result)
     }
 
-    // For FBSDKCoreKit 15+, continue user activity
-    @objc(application:continueUserActivity:restorationHandler:)
-    public func application(
-        _ application: UIApplication,
-        continue userActivity: NSUserActivity,
-        restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void
-    ) -> Bool {
-        // FBSDK no longer uses restorationHandler parameter
-        return ApplicationDelegate.shared.application(application, continue: userActivity)
+    /// START ALLOW HANDLE NATIVE FACEBOOK APP
+    public func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [AnyHashable : Any] = [:]) -> Bool {
+        var options = [UIApplication.LaunchOptionsKey: Any]()
+        for (k, value) in launchOptions {
+            let key = k as! UIApplication.LaunchOptionsKey
+            options[key] = value
+        }
+        
+        // Updated for newer Facebook SDK
+        ApplicationDelegate.shared.application(
+            application,
+            didFinishLaunchingWithOptions: options
+        )
+        return true
     }
-
-    // For FBSDKCoreKit 15+, open URL
-    @objc(application:openURL:options:)
-    public func application(
-        _ app: UIApplication,
-        open url: URL,
-        options: [UIApplication.OpenURLOptionsKey : Any] = [:]
-    ) -> Bool {
-        // FBSDK 15+ only expects app and url
-        return ApplicationDelegate.shared.application(app, open: url)
+    
+    public func application( _ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:] ) -> Bool {
+        // Updated method call for newer Facebook SDK
+        return ApplicationDelegate.shared.application(
+            app,
+            open: url,
+            sourceApplication: options[UIApplication.OpenURLOptionsKey.sourceApplication] as? String,
+            annotation: options[UIApplication.OpenURLOptionsKey.annotation]
+        )
     }
+    
+    // Add this method for scene-based lifecycle (iOS 13+)
+    @available(iOS 13.0, *)
+    public func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
+        // Updated for scene-based apps
+        return UISceneConfiguration(
+            name: "Default Configuration",
+            sessionRole: connectingSceneSession.role
+        )
+    }
+    /// END ALLOW HANDLE NATIVE FACEBOOK APP
 }
