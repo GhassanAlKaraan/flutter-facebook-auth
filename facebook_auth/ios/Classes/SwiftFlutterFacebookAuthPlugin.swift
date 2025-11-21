@@ -20,21 +20,25 @@ public class SwiftFlutterFacebookAuthPlugin: NSObject, FlutterPlugin {
         self.facebookAuth.handle(call, result: result)
     }
 
+    // For FBSDKCoreKit 15+, continue user activity
     @objc(application:continueUserActivity:restorationHandler:)
     public func application(
         _ application: UIApplication,
         continue userActivity: NSUserActivity,
         restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void
     ) -> Bool {
+        // FBSDK no longer uses restorationHandler parameter
         return ApplicationDelegate.shared.application(application, continue: userActivity)
     }
 
+    // For FBSDKCoreKit 15+, open URL
     @objc(application:openURL:options:)
     public func application(
         _ app: UIApplication,
         open url: URL,
         options: [UIApplication.OpenURLOptionsKey : Any] = [:]
     ) -> Bool {
+        // FBSDK 15+ only expects app and url
         return ApplicationDelegate.shared.application(app, open: url)
     }
 }
